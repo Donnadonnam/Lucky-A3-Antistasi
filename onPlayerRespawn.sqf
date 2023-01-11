@@ -42,6 +42,9 @@ if (side group player == teamPlayer) then
 
 	if (_moneyX < 0) then {_moneyX = 0};
 
+	_actionText = if (isLocalized "STR_chvd_title") then {localize "STR_chvd_title"} else {"View Distance Settings"};
+	_newUnit addAction [_actionText, CHVD_fnc_openDialog, [], -99, false, true, '', '_target isEqualTo _this'];
+
 	_newUnit setVariable ["score",_score -1,true];
 	_newUnit setVariable ["owner",_newUnit,true];
 	_newUnit setVariable ["punish",_punish,true];
