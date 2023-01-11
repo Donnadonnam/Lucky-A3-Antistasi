@@ -4,4 +4,6 @@
 #include "..\functions.hpp"
 #include "..\JeroenArsenal\functions.hpp"
 #include "..\Garage\functions.hpp"
+#include "..\CHVD\functions.hpp"
+
 //#include "..\Collections\functions.hpp"

@@ -144,6 +144,8 @@ player setVariable ["rankX",rank player];
 
 player setVariable ["owner",player,true];
 player setVariable ["punish",0,true];
+player enableFatigue false;
+player enableStamina false;
 
 stragglers = creategroup teamPlayer;
 (group player) enableAttack false;
@@ -510,3 +512,8 @@ if(!isMultiplayer) then
 {
     [] spawn A3A_fnc_singlePlayerBlackScreenWarning;
 };
+
+[] execVM "Scripts\JumpMF\init.sqf";
+[] execVM "Scripts\outlw_magrepack\MagRepack_init.sqf";
+[] execVM "Scripts\swimFaster.sqf";
+[] execVM "Scripts\takeUniform.sqf";

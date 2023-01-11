@@ -19,6 +19,12 @@ switch (_key) do {
         };
     };
 
+    case DIK_4: {
+        if ((isNull (objectParent player)) && currentWeapon player != '' && (stance player != 'CROUCH' || currentWeapon player != handgunWeapon player)) then {
+            player action ["SwitchWeapon", player, player, 100];
+        };
+    };
+
     case DIK_HOME: {
         if (!(_this select 4)) exitWith {};
         if (isNull (uiNameSpace getVariable "H8erHUD")) exitWith {};

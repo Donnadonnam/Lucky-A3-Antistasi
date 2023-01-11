@@ -118,6 +118,79 @@
 
 disableserialization;
 
+_canAddItem = {
+	params ["_item", "_type", "_target"];
+	private ["_itemConfig", "_allowedAll", "_allowedSlots", "_itemMass", "_maxLoad", "_load"];
+
+	_allowedAll = true;
+	_itemConfig = configfile >> "CfgWeapons" >> _item;
+
+	if !(isClass _itemConfig) then {
+		_itemConfig = configfile >> "CfgMagazines" >> _item;
+		_itemMass = getNumber (_itemConfig >> "mass");
+		if (isArray (_itemConfig >> "allowedSlots")) then {
+			_allowedSlots = getArray (_itemConfig >> "allowedSlots");
+			_allowedAll = false;
+		}
+	} else {
+		_itemMass = getNumber (_itemConfig >> "WeaponSlotsInfo" >> "mass");
+		if (_itemMass == 0) then {
+			_itemMass = getNumber (_itemConfig >> "ItemInfo" >> "mass");
+		} else {
+			if (isArray (_itemConfig >> "WeaponSlotsInfo" >> "allowedSlots")) then {
+			_allowedSlots = getArray (_itemConfig >> "WeaponSlotsInfo" >> "allowedSlots");
+			_allowedAll = false;
+			};
+		};
+	};
+
+
+	if (_allowedAll) then {
+		_allowedSlots = ["uniform", "vest", "backpack"];
+	} else {
+		if (isNil "_allowedSlots") then {
+			_allowedSlots = [];
+		};
+
+		_allowedSlots = _allowedSlots apply {
+			switch(_x) do {
+				case 801: {"uniform";};
+				case 701: {"vest";};
+				case 901: {"backpack";};
+			};
+		};
+	};
+	
+	if (_type in _allowedSlots) then {
+		switch (_type) do
+		{
+			case "uniform": {
+				if (uniform _target != "") then {
+					_maxLoad = maxLoad (uniformContainer _target);
+					_load = loadUniform _target;
+				};
+			};
+			case "vest": {
+				if (vest _target != "") then {
+					_maxLoad = maxLoad (vestContainer _target);
+					_load = loadVest _target;
+				};
+			};
+			case "backpack": {
+				if (backpack _target != "") then {
+					_maxLoad = maxLoad (backpackContainer _target);
+					_load = loadBackpack _target;
+				};
+			};
+		};
+	} else {
+		_maxLoad = 0;
+		_load = 0;
+	};
+
+	((round ((_maxLoad * (1 - _load)) * 1000)) / 1000) >= _itemMass // remove some 1000x precision shit
+};
+
 _arrayContains = {
 	private _item = toLower(param [1]);
 	(param[0]) findIf { toLower(_x) == _item } != -1
@@ -1684,9 +1757,9 @@ switch _mode do {
 					};
 					{
 						_canAdd = switch _index do{
-							case IDC_RSCDISPLAYARSENAL_TAB_UNIFORM:{player canAddItemToUniform _x;};
-							case IDC_RSCDISPLAYARSENAL_TAB_VEST:{player canAddItemToVest _x;};
-							case IDC_RSCDISPLAYARSENAL_TAB_BACKPACK:{player canAddItemToBackpack _x;};
+							case IDC_RSCDISPLAYARSENAL_TAB_UNIFORM:{[_x, "uniform", player] call _canAddItem;};
+							case IDC_RSCDISPLAYARSENAL_TAB_VEST:{[_x, "vest", player] call _canAddItem;};
+							case IDC_RSCDISPLAYARSENAL_TAB_BACKPACK:{[_x, "backpack", player] call _canAddItem;};
 						};
 						if(_canAdd)then{
 							switch _index do{
@@ -1714,9 +1787,9 @@ switch _mode do {
 						_count = _x select 1;
 
 						_canAdd = switch _index do{
-							case IDC_RSCDISPLAYARSENAL_TAB_UNIFORM:{player canAddItemToUniform _magazine;};
-							case IDC_RSCDISPLAYARSENAL_TAB_VEST:{player canAddItemToVest _magazine;};
-							case IDC_RSCDISPLAYARSENAL_TAB_BACKPACK:{player canAddItemToBackpack _magazine;};
+							case IDC_RSCDISPLAYARSENAL_TAB_UNIFORM:{[_magazine, "uniform", player] call _canAddItem;};
+							case IDC_RSCDISPLAYARSENAL_TAB_VEST:{[_magazine, "vest", player] call _canAddItem;};
+							case IDC_RSCDISPLAYARSENAL_TAB_BACKPACK:{[_magazine, "backpack", player] call _canAddItem;};
 						};
 						if(_canAdd)then{
 							_container addMagazineAmmoCargo [_magazine,1,_count];
@@ -1776,7 +1849,7 @@ switch _mode do {
 						if (count _magazines > 0) then {
 							_mag = (_magazines select 0);
 							if([jna_dataList select IDC_RSCDISPLAYARSENAL_TAB_CARGOMAGALL, _mag] call jn_fnc_arsenal_itemCount > 0)then{
-								if((player canAddItemToUniform _mag)||(player canAddItemToVest _mag)||(player canAddItemToBackpack _mag))then{
+								if(([_mag, "uniform", player] call _canAddItem)||([_mag, "vest", player] call _canAddItem)||([_mag, "backpack", player] call _canAddItem))then{
 									player addmagazine _mag;
 									[IDC_RSCDISPLAYARSENAL_TAB_CARGOMAGALL, _mag]call jn_fnc_arsenal_removeItem;
 								}else{
@@ -2151,9 +2224,9 @@ switch _mode do {
 					};
 					_canAdd = false;
 					_container = switch _selected do{
-						case IDC_RSCDISPLAYARSENAL_TAB_UNIFORM: {_canAdd = player canAddItemToUniform _item; uniformContainer player};
-						case IDC_RSCDISPLAYARSENAL_TAB_VEST: {_canAdd = player canAddItemToVest _item; vestContainer player;};
-						case IDC_RSCDISPLAYARSENAL_TAB_BACKPACK: {_canAdd = player canAddItemToBackpack _item; backpackContainer player;};
+						case IDC_RSCDISPLAYARSENAL_TAB_UNIFORM: {_canAdd = [_item, "uniform", player] call _canAddItem; uniformContainer player};
+						case IDC_RSCDISPLAYARSENAL_TAB_VEST: {_canAdd = [_item, "vest", player] call _canAddItem; vestContainer player;};
+						case IDC_RSCDISPLAYARSENAL_TAB_BACKPACK: {_canAdd = [_item, "backpack", player] call _canAddItem; backpackContainer player;};
 					};
 					if(_canAdd)then{
 						_container addMagazineAmmoCargo [_item,1,_count];
@@ -2662,7 +2735,7 @@ switch _mode do {
 			_item = _x select 0;
 			_amount = _x select 1;
 			_amountAdded = 0;
-			while {(_amountAdded < _amount) && (player canAddItemToUniform _x)}do{
+			while {(_amountAdded < _amount) && ([_x, "uniform", player] call _canAddItem)}do{
 				_amountAdded = _amountAdded + 1;
 				player addItemToUniform _item;
 			};
@@ -2725,7 +2798,7 @@ switch _mode do {
 			_item = _x select 0;
 			_amount = _x select 1;
 			_amountAdded = 0;
-			while {(_amountAdded < _amount) && (player canAddItemToBackpack _x)}do{
+			while {(_amountAdded < _amount) && ([_x, "backpack", player] call _canAddItem)}do{
 				_amountAdded = _amountAdded + 1;
 				player addItemToBackpack _item;
 			};

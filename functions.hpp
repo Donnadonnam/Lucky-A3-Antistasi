@@ -27,6 +27,7 @@ class A3A
         class prepareMarkerArrays {};
         class reinitY {};
         class resourcecheck {};
+        class switchMoveGlobal {};
         class tags {};
     };
 
@@ -655,6 +656,7 @@ class A3A
     class String {
         class pad_2Digits {};
         class pad_3Digits {};
+        class startsWith {};
     };
 
     class Templates
@@ -707,6 +709,7 @@ class A3A
         class vehicleTextureSync {};
         class vehicleWillCollideAtPosition {};
         class getRoadDirection {};
+        
     };
 
     class UtilityItems {

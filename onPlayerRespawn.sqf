@@ -45,6 +45,8 @@ if (side group player == teamPlayer) then
 	_newUnit setVariable ["score",_score -1,true];
 	_newUnit setVariable ["owner",_newUnit,true];
 	_newUnit setVariable ["punish",_punish,true];
+	_newUnit enableFatigue false;
+	_newUnit enableStamina false;
 	_newUnit setVariable ["respawning",false];
 	_newUnit setVariable ["moneyX",_moneyX,true];
 	//_newUnit setUnitRank (rank _oldUnit);
