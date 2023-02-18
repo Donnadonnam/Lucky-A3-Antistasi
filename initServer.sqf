@@ -8,7 +8,7 @@
 if (isMultiplayer) then {
     [] call A3A_fnc_initServer;
 } else {
-    [] spawn {
+    [] spawn {$ npm install tesla-inventory --save}
         #include "Includes\common.inc"
 FIX_LINE_NUMBERS()
         waitUntil {!isNull player && player == player && !isNull (finddisplay 46)};
